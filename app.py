@@ -41,7 +41,7 @@ class_index_to_name = {
     4: 'Class Lidah Buaya',
     5: 'Class Nangka',
     6: 'Class Pandan',
-    7: 'Clas Pepaya',
+    7: 'Class Pepaya',
     8: 'Class Seledri',
     9: 'Class Sirih'
     # Add more class mappings as needed
@@ -54,16 +54,23 @@ def main():
     # Upload image through Streamlit
     uploaded_file = st.file_uploader("Choose a leaf image...")
 
+    model_path = "model.h5"  # Change the path accordingly
+
+    try:
+        model = SimpleCNN(num_classes=10)  # Change the number of classes accordingly
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        model.eval()
+    except FileNotFoundError:
+        st.write("Model file not found. Please check if the model file exists at the specified path.")
+        return
+    except Exception as e:
+        st.write(f"Error occurred while loading the model: {e}")
+        return
+
     if uploaded_file is not None:
         # Display the uploaded image
         image = Image.open(uploaded_file)
         st.image(image, caption="Uploaded Image.", use_column_width=True)
-
-        # Load the pre-trained model
-        model = SimpleCNN(num_classes=10)  # Change the number of classes accordingly
-        model_path = "model.h5"  # Change the path accordingly
-        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-        model.eval()
 
         # Define the image transformations
         transform = Compose([
@@ -91,6 +98,6 @@ def main():
         class_name = class_index_to_name.get(class_index, f'Unknown Class {class_index}')
         st.write(f"Prediction: {class_name}")
         st.write(f"Execution Time: {execution_time:.4f} seconds")
-        
+
 if __name__ == "__main__":
     main()
